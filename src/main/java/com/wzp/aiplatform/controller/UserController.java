@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
+@CrossOrigin(allowCredentials="true",origins = "http://localhost:8080")
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
