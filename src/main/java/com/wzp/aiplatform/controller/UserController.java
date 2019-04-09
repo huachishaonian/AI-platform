@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
@@ -23,7 +22,6 @@ public class UserController {
      * @return
      */
     @GetMapping("/login")
-    @CrossOrigin
     public Mono<ApiResult<Object>> getLoginInfo(@RequestParam String username, @RequestParam String password) {
         log.info("getLoginInfo username = {}, password = {}", username, password);
         return userService.getLoginInfo(username, password);
