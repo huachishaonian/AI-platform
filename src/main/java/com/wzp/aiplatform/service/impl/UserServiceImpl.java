@@ -60,4 +60,26 @@ public class UserServiceImpl implements UserService {
                     .onErrorReturn(ApiResult.getApiResult(-1, "login fail"));
         });
     }
+
+    @Override
+    public Mono getRegisterInfo(String username, String password) {
+        return Mono.fromSupplier(() -> {
+            Mono<Admin> adminMono = selectAdminLogin(username);
+            Mono<User> userMono = selectUserLogin(username);
+            return Mono.zip(adminMono, userMono).map(tuple -> {
+                if (StringUtils.isEmpty(tuple.getT1().getPassword())
+                        && StringUtils.isEmpty(tuple.getT2().getPassword())) {
+                    User user = new User();
+                    user.setUsername(username);
+                    user.setPassword(MD5Util.encryptMD5(password));
+                    if (userMapper.insert(user) > 0) {
+                        return ApiResult.getApiResult(200, "user register success");
+                    }
+                }
+                return ApiResult.getApiResult(-1, "user register fail");
+            }).publishOn(Schedulers.elastic()).doOnError(t ->
+                    log.error("getRegisterInfo zip is error!~~,username == {}", username, t))
+                    .onErrorReturn(ApiResult.getApiResult(-1, "user register fail"));
+        });
+    }
 }
