@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 public class AiplatformApplication {
 
     public static void main(String[] args) {
-        //wym
         SpringApplication.run(AiplatformApplication.class, args);
     }
 
