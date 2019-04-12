@@ -140,6 +140,7 @@ public class TaskServiceImpl implements TaskService {
                 TaskList taskList = new TaskList();
                 taskList.setTaskid(taskId);
                 taskList.setTasklistname(array[i].getName());
+                taskList.setFinished(false);
                 taskListMapper.insert(taskList);
             }
         }

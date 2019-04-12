@@ -8,5 +8,6 @@ public class TaskList {
     private Integer tasklistid;
     private Integer taskid;
     private String tasklistname;
+    private Boolean finished;
 
 }
