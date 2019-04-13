@@ -1,11 +1,15 @@
 package com.wzp.aiplatform.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.wzp.aiplatform.mapper.TaskListMapper;
 import com.wzp.aiplatform.mapper.TaskMapper;
 import com.wzp.aiplatform.mapper.ZipMapper;
 import com.wzp.aiplatform.model.Task;
 import com.wzp.aiplatform.model.TaskList;
+import com.wzp.aiplatform.model.TaskListExample;
 import com.wzp.aiplatform.model.Zip;
+import com.wzp.aiplatform.model.po.ResTaskList;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
 import com.wzp.aiplatform.utils.StaticConfig;
@@ -18,7 +22,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -82,10 +88,11 @@ public class TaskServiceImpl implements TaskService {
             }
             return ApiResult.getApiResult(-1, "create the task failly");
         }).publishOn(Schedulers.elastic()).doOnError(t ->
-                log.error("uploadTask error!~~,taskName == {}", taskName,t))
+                log.error("uploadTask error!~~,taskName == {}", taskName, t))
                 .onErrorReturn(ApiResult.getApiResult(-1, "create the task failly"));
     }
-     /**
+
+    /**
        * zip解压
        * @param srcFile        zip源文件
        * @param destDirPath     解压后的目标文件夹
@@ -136,6 +143,11 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+    /**
+     * 解压文件存入数据库
+     * @param path
+     * @param taskId
+     */
     private void getFile(String path, Integer taskId) {
         File file = new File(path);
         File[] array = file.listFiles();
@@ -150,4 +162,27 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+    @Override
+    public Mono<ApiResult<ResTaskList>> showTaskList(Integer taskId, Integer currentPage) {
+        return Mono.fromSupplier(() -> {
+            TaskListExample example = new TaskListExample();
+            TaskListExample.Criteria criteria = example.createCriteria();
+            criteria.andTaskidEqualTo(taskId);
+            criteria.andFinishedEqualTo(false);
+            List<TaskList> taskListList = taskListMapper.selectByExample(example);
+            PageHelper.startPage(currentPage, 1);
+            List<TaskList> taskLists = taskListMapper.selectByExample(example);
+            ResTaskList resTaskList = new ResTaskList();
+            if (taskLists != null && taskLists.size() > 0) {
+                PageInfo<TaskList> pageInfo = new PageInfo(taskLists);
+                resTaskList.setSize(taskListList.size());
+                resTaskList.setTaskLists(pageInfo.getList());
+                return ApiResult.getApiResult(resTaskList);
+            }
+            resTaskList.setSize(0);
+            return ApiResult.getApiResult(resTaskList);
+        }).publishOn(Schedulers.elastic()).doOnError(t ->
+                log.error("showTaskList error!~~,taskId == {}", taskId, t))
+                .onErrorReturn(ApiResult.getApiResult(new ResTaskList()));
+    }
 }

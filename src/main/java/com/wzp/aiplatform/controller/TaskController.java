@@ -1,5 +1,7 @@
 package com.wzp.aiplatform.controller;
 
+import com.wzp.aiplatform.model.TaskList;
+import com.wzp.aiplatform.model.po.ResTaskList;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 /**
  * Created by wzp on 2019-04-12 16:29
@@ -29,5 +33,12 @@ public class TaskController {
                                                @RequestParam MultipartFile file) {
          log.info("uploadTask ~ file = {}", file);
          return taskService.uploadTask(taskName, taskShort, taskType, taskDetail, file);
+     }
+
+     @PostMapping("/showtasklist")
+     public Mono<ApiResult<ResTaskList>> showTaskList(@RequestParam Integer taskId,
+                                                      @RequestParam Integer currentPage) {
+         log.info("showTaskList ~ taskId = {}", taskId);
+         return taskService.showTaskList(taskId, currentPage);
      }
 }
