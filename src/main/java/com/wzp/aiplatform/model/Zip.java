@@ -6,4 +6,6 @@ import lombok.Data;
 public class Zip {
 
     private String filename;
+    private Integer taskid;
+
 }

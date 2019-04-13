@@ -53,7 +53,7 @@ public class TaskServiceImpl implements TaskService {
             String fileName = null;
             if(!file.isEmpty()){
                 fileName = file.getOriginalFilename();
-                String zipfilename = zipMapper.selectByPrimaryKey(fileName);
+                String zipfilename = zipMapper.selectByName(fileName);
                 if (!StringUtils.isEmpty(zipfilename)) {
                     return ApiResult.getApiResult(-1, "the zipfile exists");
                 }
@@ -63,9 +63,7 @@ public class TaskServiceImpl implements TaskService {
                     task.setTaskshort(taskShort);
                     task.setTasktype(taskType);
                     task.setTaskdetail(taskDetail);
-                    Zip zip = new Zip();
-                    zip.setFilename(fileName);
-                    if (taskMapper.insert(task) > 0 && zipMapper.insert(zip) > 0) {
+                    if (taskMapper.insert(task) > 0) {
                         file.transferTo(new File(filePath + File.separator + fileName));
                     }
                 } catch (IOException e) {
@@ -74,9 +72,15 @@ public class TaskServiceImpl implements TaskService {
             }
             File zipFile = new File(staticConfig.getUploadPath() + File.separator + fileName);
             unZip(zipFile, staticConfig.getDecompressionPath() + File.separator + fileName);
-            Integer taskId = taskMapper.selectByName(taskName).getTaskid();
-            getFile(staticConfig.getDecompressionPath() + File.separator + fileName, taskId);
-            return ApiResult.getApiResult("create the task successfully", taskId +"," + fileName);
+            Task restask = taskMapper.selectByName(taskName);
+            getFile(staticConfig.getDecompressionPath() + File.separator + fileName, restask.getTaskid());
+            Zip zip = new Zip();
+            zip.setFilename(fileName);
+            zip.setTaskid(restask.getTaskid());
+            if (zipMapper.insert(zip) > 0) {
+                return ApiResult.getApiResult("create the task successfully", restask);
+            }
+            return ApiResult.getApiResult(-1, "create the task failly");
         }).publishOn(Schedulers.elastic()).doOnError(t ->
                 log.error("uploadTask error!~~,taskName == {}", taskName,t))
                 .onErrorReturn(ApiResult.getApiResult(-1, "create the task failly"));

@@ -8,5 +8,6 @@ public class Label {
     private Integer labelid;
     private Integer tasklistid;
     private String content;
+    private Integer taskid;
 
 }
