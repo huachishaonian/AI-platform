@@ -56,9 +56,9 @@ public interface LabelMapper {
      * @mbg.generated Sat Apr 13 12:01:15 CST 2019
      */
     @Insert({
-        "insert into label (labelid, tasklistid, ",
+        "insert into label (tasklistid, ",
         "content, taskid)",
-        "values (#{labelid,jdbcType=INTEGER}, #{tasklistid,jdbcType=INTEGER}, ",
+        "values (#{tasklistid,jdbcType=INTEGER}, ",
         "#{content,jdbcType=VARCHAR}, #{taskid,jdbcType=INTEGER})"
     })
     int insert(Label record);

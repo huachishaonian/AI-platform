@@ -2,13 +2,11 @@ package com.wzp.aiplatform.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.wzp.aiplatform.mapper.LabelMapper;
 import com.wzp.aiplatform.mapper.TaskListMapper;
 import com.wzp.aiplatform.mapper.TaskMapper;
 import com.wzp.aiplatform.mapper.ZipMapper;
-import com.wzp.aiplatform.model.Task;
-import com.wzp.aiplatform.model.TaskList;
-import com.wzp.aiplatform.model.TaskListExample;
-import com.wzp.aiplatform.model.Zip;
+import com.wzp.aiplatform.model.*;
 import com.wzp.aiplatform.model.po.ResTaskList;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
@@ -22,7 +20,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -45,6 +42,8 @@ public class TaskServiceImpl implements TaskService {
     private TaskMapper taskMapper;
     @Autowired
     private TaskListMapper taskListMapper;
+    @Autowired
+    private LabelMapper labelMapper;
 
     @Override
     public Mono uploadTask(String taskName, String taskShort, Integer taskType,
@@ -185,4 +184,23 @@ public class TaskServiceImpl implements TaskService {
                 log.error("showTaskList error!~~,taskId == {}", taskId, t))
                 .onErrorReturn(ApiResult.getApiResult(new ResTaskList()));
     }
+
+    @Override
+    public Mono<ApiResult<Object>> labelTask(Integer taskListId, String content, Integer taskId) {
+        return Mono.fromSupplier(() -> {
+            Label label = new Label();
+            label.setTasklistid(taskListId);
+            label.setContent(content);
+            label.setTaskid(taskId);
+            if (labelMapper.insert(label) > 0) {
+                taskListMapper.updateByPrimaryId(taskListId, true);
+                return ApiResult.getApiResult(200, "label success");
+            }
+            return ApiResult.getApiResult(-1, "label fail");
+        }).publishOn(Schedulers.elastic()).doOnError(t ->
+                log.error("labelTask error!~~,taskListId = {}, content = {}, taskId == {}", taskListId, content, taskId, t))
+                .onErrorReturn(ApiResult.getApiResult(-1, "label fail"));
+    }
+
+
 }

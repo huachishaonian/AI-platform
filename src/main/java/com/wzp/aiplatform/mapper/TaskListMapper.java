@@ -148,4 +148,11 @@ public interface TaskListMapper {
         "where tasklistid = #{tasklistid,jdbcType=INTEGER}"
     })
     int updateByPrimaryKey(TaskList record);
+
+    @Update({
+            "update tasklist",
+            "set finished = #{finished,jdbcType=BIT}",
+            "where tasklistid = #{tasklistid,jdbcType=INTEGER}"
+    })
+    void updateByPrimaryId(Integer tasklistid, Boolean finished);
 }
