@@ -49,7 +49,6 @@ public class TaskServiceImpl implements TaskService {
     public Mono uploadTask(String taskName, String taskShort, Integer taskType,
                                                            String taskDetail, MultipartFile file) {
         return Mono.fromSupplier(() -> {
-
             Task task = taskMapper.selectByName(taskName);
             if (task != null && !StringUtils.isEmpty(task.getTaskname())) {
                 return ApiResult.getApiResult(-1, "the taskname already exists");
@@ -168,13 +167,12 @@ public class TaskServiceImpl implements TaskService {
             TaskListExample.Criteria criteria = example.createCriteria();
             criteria.andTaskidEqualTo(taskId);
             criteria.andFinishedEqualTo(false);
-            List<TaskList> taskListList = taskListMapper.selectByExample(example);
             PageHelper.startPage(currentPage, 1);
             List<TaskList> taskLists = taskListMapper.selectByExample(example);
             ResTaskList resTaskList = new ResTaskList();
             if (taskLists != null && taskLists.size() > 0) {
                 PageInfo<TaskList> pageInfo = new PageInfo(taskLists);
-                resTaskList.setSize(taskListList.size());
+                resTaskList.setSize((int) pageInfo.getTotal());
                 resTaskList.setTaskLists(pageInfo.getList());
                 return ApiResult.getApiResult(resTaskList);
             }
