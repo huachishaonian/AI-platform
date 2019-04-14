@@ -4,6 +4,7 @@ import com.wzp.aiplatform.mapper.AdminMapper;
 import com.wzp.aiplatform.mapper.UserMapper;
 import com.wzp.aiplatform.model.Admin;
 import com.wzp.aiplatform.model.User;
+import com.wzp.aiplatform.model.po.ResUser;
 import com.wzp.aiplatform.service.UserService;
 import com.wzp.aiplatform.utils.ApiResult;
 import com.wzp.aiplatform.utils.MD5Util;
@@ -50,9 +51,15 @@ public class UserServiceImpl implements UserService {
             Mono<User> userMono = selectUserLogin(username);
             return Mono.zip(adminMono, userMono).map(tuple -> {
                 if (!StringUtils.isEmpty(tuple.getT1().getPassword()) && tuple.getT1().getPassword().equals(MD5Util.encryptMD5(password))){
-                    return ApiResult.getApiResult(200, "admin login success");
+                    ResUser resUser = new ResUser();
+                    resUser.setUsername(username);
+                    resUser.setIsRoot(true);
+                    return ApiResult.getApiResult("admin login success", resUser);
                 } else if (!StringUtils.isEmpty(tuple.getT2().getPassword()) && tuple.getT2().getPassword().equals(MD5Util.encryptMD5(password))){
-                    return ApiResult.getApiResult(200, "user login success");
+                    ResUser resUser = new ResUser();
+                    resUser.setUsername(username);
+                    resUser.setIsRoot(false);
+                    return ApiResult.getApiResult( "user login success", resUser);
                 }
                 return ApiResult.getApiResult(-1, "login fail");
             }).publishOn(Schedulers.elastic()).doOnError(t ->
