@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 @RestController
-@CrossOrigin(allowCredentials="true", origins = "http://localhost:8080")
+@CrossOrigin(allowCredentials="true", origins = "http://localhost:8080", allowedHeaders = "*")
 @RequestMapping("/task")
 @Slf4j
 public class TaskController {
