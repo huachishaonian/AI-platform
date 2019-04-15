@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
                         return ApiResult.getApiResult(200, "user register success");
                     }
                 }
-                return ApiResult.getApiResult(-1, "user register fail");
+                return ApiResult.getApiResult(-100, "user register fail, it already exists");
             }).publishOn(Schedulers.elastic()).doOnError(t ->
                     log.error("getRegisterInfo zip is error!~~,username == {}", username, t))
                     .onErrorReturn(ApiResult.getApiResult(-1, "user register fail"));

@@ -35,7 +35,8 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
-    public Mono<ApiResult<Object>> getRegisterInfo(@RequestParam String username, @RequestParam String password) {
+    public Mono<ApiResult<Object>> getRegisterInfo(@RequestParam String username,
+                                                   @RequestParam String password) {
         log.info("getRegisterInfo username = {}, password = {}", username, password);
         return userService.getRegisterInfo(username, password);
     }
