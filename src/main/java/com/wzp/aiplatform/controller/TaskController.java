@@ -1,5 +1,6 @@
 package com.wzp.aiplatform.controller;
 
+import com.wzp.aiplatform.model.Task;
 import com.wzp.aiplatform.model.po.ResTaskList;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
@@ -45,6 +46,16 @@ public class TaskController {
 
     /**
      * 展示任务
+     * @return
+     */
+    @GetMapping("/showtask")
+     public Mono<ApiResult<? extends List<Task>>> showTask() {
+         log.info("showTask ~ ");
+         return taskService.showTask();
+     }
+
+    /**
+     * 展示详细任务
      * @param taskId
      * @param currentPage
      * @return

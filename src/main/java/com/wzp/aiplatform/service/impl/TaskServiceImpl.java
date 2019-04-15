@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -82,12 +83,25 @@ public class TaskServiceImpl implements TaskService {
             zip.setFilename(fileName);
             zip.setTaskid(restask.getTaskid());
             if (zipMapper.insert(zip) > 0) {
-                return ApiResult.getApiResult("create the task successfully", restask);
+                return ApiResult.getApiResult(200, "create the task successfully");
             }
             return ApiResult.getApiResult(-1, "create the task failly");
         }).publishOn(Schedulers.elastic()).doOnError(t ->
                 log.error("uploadTask error!~~,taskName == {}", taskName, t))
                 .onErrorReturn(ApiResult.getApiResult(-1, "create the task failly"));
+    }
+
+    @Override
+    public Mono<ApiResult<? extends List<Task>>> showTask() {
+        return Mono.fromSupplier(() -> {
+            List<Task> taskList = taskMapper.queryTask();
+            if ( taskList != null && taskList.size() > 0) {
+                return ApiResult.getApiResult(taskList);
+            }
+            return ApiResult.getApiResult(new ArrayList<Task>());
+        }).publishOn(Schedulers.elastic()).doOnError(t ->
+                log.error("showTask error!~~ ", t))
+                .onErrorReturn(ApiResult.getApiResult(new ArrayList<>()));
     }
 
     /**
