@@ -75,10 +75,10 @@ public class TaskServiceImpl implements TaskService {
                     e.printStackTrace();
                 }
             }
-            File zipFile = new File(staticConfig.getUploadPath() + File.separator + fileName);
-            unZip(zipFile, staticConfig.getDecompressionPath() + File.separator + fileName);
             Task restask = taskMapper.selectByName(taskName);
-            getFile(staticConfig.getDecompressionPath() + File.separator + fileName, restask.getTaskid());
+            File zipFile = new File(staticConfig.getUploadPath() + File.separator + fileName);
+            unZip(zipFile, staticConfig.getDecompressionPath() + File.separator + restask.getTaskid());
+            getFile(staticConfig.getDecompressionPath() + File.separator + restask.getTaskid(), restask.getTaskid());
             Zip zip = new Zip();
             zip.setFilename(fileName);
             zip.setTaskid(restask.getTaskid());
@@ -89,19 +89,6 @@ public class TaskServiceImpl implements TaskService {
         }).publishOn(Schedulers.elastic()).doOnError(t ->
                 log.error("uploadTask error!~~,taskName == {}", taskName, t))
                 .onErrorReturn(ApiResult.getApiResult(-1, "create the task failly"));
-    }
-
-    @Override
-    public Mono<ApiResult<? extends List<Task>>> showTask() {
-        return Mono.fromSupplier(() -> {
-            List<Task> taskList = taskMapper.queryTask();
-            if ( taskList != null && taskList.size() > 0) {
-                return ApiResult.getApiResult(taskList);
-            }
-            return ApiResult.getApiResult(new ArrayList<Task>());
-        }).publishOn(Schedulers.elastic()).doOnError(t ->
-                log.error("showTask error!~~ ", t))
-                .onErrorReturn(ApiResult.getApiResult(new ArrayList<>()));
     }
 
     /**
@@ -172,6 +159,19 @@ public class TaskServiceImpl implements TaskService {
                 taskListMapper.insert(taskList);
             }
         }
+    }
+
+    @Override
+    public Mono<ApiResult<? extends List<Task>>> showTask() {
+        return Mono.fromSupplier(() -> {
+            List<Task> taskList = taskMapper.queryTask();
+            if ( taskList != null && taskList.size() > 0) {
+                return ApiResult.getApiResult(taskList);
+            }
+            return ApiResult.getApiResult(new ArrayList<Task>());
+        }).publishOn(Schedulers.elastic()).doOnError(t ->
+                log.error("showTask error!~~ ", t))
+                .onErrorReturn(ApiResult.getApiResult(new ArrayList<>()));
     }
 
     @Override
