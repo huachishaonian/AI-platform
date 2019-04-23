@@ -1,7 +1,7 @@
 package com.wzp.aiplatform.controller;
 
-import com.wzp.aiplatform.model.Task;
 import com.wzp.aiplatform.model.po.ResTaskList;
+import com.wzp.aiplatform.model.po.ShowTask;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,7 @@ public class TaskController {
      * @return
      */
     @GetMapping("/showtask")
-     public Mono<ApiResult<? extends List<Task>>> showTask() {
+     public Mono<ApiResult<? extends List<ShowTask>>> showTask() {
          log.info("showTask ~ ");
          return taskService.showTask();
      }

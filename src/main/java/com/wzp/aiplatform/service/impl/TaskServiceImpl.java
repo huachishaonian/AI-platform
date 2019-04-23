@@ -2,12 +2,10 @@ package com.wzp.aiplatform.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.wzp.aiplatform.mapper.LabelMapper;
-import com.wzp.aiplatform.mapper.TaskListMapper;
-import com.wzp.aiplatform.mapper.TaskMapper;
-import com.wzp.aiplatform.mapper.ZipMapper;
+import com.wzp.aiplatform.mapper.*;
 import com.wzp.aiplatform.model.*;
 import com.wzp.aiplatform.model.po.ResTaskList;
+import com.wzp.aiplatform.model.po.ShowTask;
 import com.wzp.aiplatform.service.TaskService;
 import com.wzp.aiplatform.utils.ApiResult;
 import com.wzp.aiplatform.utils.StaticConfig;
@@ -45,6 +43,8 @@ public class TaskServiceImpl implements TaskService {
     private TaskListMapper taskListMapper;
     @Autowired
     private LabelMapper labelMapper;
+    @Autowired
+    private TaskSizeMapper taskSizeMapper;
 
     @Override
     public Mono uploadTask(String taskName, String taskShort, Integer taskType,
@@ -150,6 +150,10 @@ public class TaskServiceImpl implements TaskService {
     private void getFile(String path, Integer taskId) {
         File file = new File(path);
         File[] array = file.listFiles();
+        TaskSize taskSize = new TaskSize();
+        taskSize.setTaskid(taskId);
+        taskSize.setTasklength(array.length);
+        taskSizeMapper.insert(taskSize);
         for (int i = 0; i < array.length; i++) {
             if (array[i].isFile()) {
                 TaskList taskList = new TaskList();
@@ -162,13 +166,36 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Mono<ApiResult<? extends List<Task>>> showTask() {
+    public Mono<ApiResult<? extends List<ShowTask>>> showTask() {
         return Mono.fromSupplier(() -> {
             List<Task> taskList = taskMapper.queryTask();
-            if ( taskList != null && taskList.size() > 0) {
-                return ApiResult.getApiResult(taskList);
+            List<ShowTask> showTaskList = new ArrayList<>();
+            TaskListExample example = new TaskListExample();
+            TaskListExample.Criteria criteria = example.createCriteria();
+            criteria.andFinishedEqualTo(false);
+            if (taskList != null && taskList.size() > 0) {
+                taskList.forEach(task -> {
+                    criteria.andTaskidEqualTo(task.getTaskid());
+                    ShowTask showTask = new ShowTask();
+                    List<TaskList> taskLists = taskListMapper.selectByExample(example);
+                    Integer size = taskSizeMapper.selectLength(task.getTaskid());
+                    if (size == taskLists.size()) {
+                        showTask.setTags(0);
+                        showTask.setTask(task);
+                        showTaskList.add(showTask);
+                    } else if (taskLists.size() == 0) {
+                        showTask.setTags(2);
+                        showTask.setTask(task);
+                        showTaskList.add(showTask);
+                    } else {
+                        showTask.setTags(1);
+                        showTask.setTask(task);
+                        showTaskList.add(showTask);
+                    }
+                });
+                return ApiResult.getApiResult(showTaskList);
             }
-            return ApiResult.getApiResult(new ArrayList<Task>());
+            return ApiResult.getApiResult(new ArrayList<ShowTask>());
         }).publishOn(Schedulers.elastic()).doOnError(t ->
                 log.error("showTask error!~~ ", t))
                 .onErrorReturn(ApiResult.getApiResult(new ArrayList<>()));
