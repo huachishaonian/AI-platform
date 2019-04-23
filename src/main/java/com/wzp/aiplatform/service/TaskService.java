@@ -31,6 +31,8 @@ public interface TaskService {
      */
     Mono<ApiResult<? extends List<ShowTask>>> showTask();
 
+    Mono<ApiResult<String>> showDetail(Integer taskId);
+
     /**
      * 展示详细任务
      * @param taskId

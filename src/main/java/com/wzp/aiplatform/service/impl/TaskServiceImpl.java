@@ -202,6 +202,19 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Mono<ApiResult<String>> showDetail(Integer taskId) {
+        return Mono.fromSupplier(() -> {
+            Task task = taskMapper.selectByPrimaryKey(taskId);
+            if (task != null && !StringUtils.isEmpty(task.getTaskdetail())) {
+                return ApiResult.getApiResult(task.getTaskdetail());
+            }
+            return ApiResult.getApiResult("");
+        }).publishOn(Schedulers.elastic()).doOnError(t ->
+                log.error("showDetail error!~~ ", t))
+                .onErrorReturn(ApiResult.getApiResult(""));
+    }
+
+    @Override
     public Mono<ApiResult<ResTaskList>> showTaskList(Integer taskId, Integer currentPage) {
         return Mono.fromSupplier(() -> {
             TaskListExample example = new TaskListExample();

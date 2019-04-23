@@ -55,6 +55,17 @@ public class TaskController {
      }
 
     /**
+     * 任务详细
+     * @param taskId
+     * @return
+     */
+     @PostMapping("/showdetail")
+     public Mono<ApiResult<String>> showDetail(@RequestParam Integer taskId) {
+         log.info("showDetail ~  taskId = {}", taskId);
+         return taskService.showDetail(taskId);
+     }
+
+    /**
      * 展示详细任务
      * @param taskId
      * @param currentPage
